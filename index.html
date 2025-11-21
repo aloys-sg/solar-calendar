@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oikos Solar Advent Calendar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap');
+
+        :root {
+            --oikos-green: #00a550; 
+            --solar-yellow: #fff200; 
+            --hsg-green: #006c3a;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(to bottom, #0f172a 0%, #1e3a8a 50%, #60a5fa 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        h1, h2, .door-number {
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        /* --- SCENERY BACKGROUND --- */
+        .scenery-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .sun-glow {
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255,242,0,0.8) 0%, rgba(255,242,0,0) 70%);
+            opacity: 0.6;
+            animation: pulse-sun 4s infinite alternate;
+        }
+
+        @keyframes pulse-sun {
+            from { transform: scale(1); opacity: 0.5; }
+            to { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .landscape {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: auto;
+            max-height: 50vh; 
+        }
+
+        /* Snowflake Animation */
+        .snowflake {
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px #000;
+            position: fixed;
+            top: -10%;
+            z-index: 9999;
+            user-select: none;
+            cursor: default;
+            animation-name: snowflakes-fall, snowflakes-shake;
+            animation-duration: 10s, 3s;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+            animation-play-state: running, running;
+            opacity: 0.8;
+        }
+
+        @keyframes snowflakes-fall {
+            0% { top: -10%; }
+            100% { top: 100%; }
+        }
+
+        @keyframes snowflakes-shake {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(80px); }
+        }
+
+        /* Card Styling */
+        .door-card {
+            perspective: 1000px;
+            transition: transform 0.3s;
+            z-index: 10;
+        }
+        
+        .door-card:hover {
+            transform: scale(1.02);
+        }
+
+        .door-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            border-radius: 0.75rem;
+        }
+
+        .door-card.opened .door-inner {
+            transform: rotateY(180deg);
+        }
+
+        .door-front, .door-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Christmas Gift Wrap Style Front */
+        .door-front {
+            background: #b91c1c; 
+            background: repeating-linear-gradient(
+                45deg,
+                #991b1b,
+                #991b1b 10px,
+                #b91c1c 10px,
+                #b91c1c 20px
+            );
+            border: 2px solid #fca5a5;
+            color: white;
+            cursor: pointer;
+        }
+
+        .door-front.locked {
+            background: #1e293b;
+            border-color: #334155;
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .door-back {
+            background-color: #fffbeb; 
+            color: #1f2937;
+            transform: rotateY(180deg);
+            text-align: center;
+            padding: 1rem;
+            border: 4px solid #fcd34d; 
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.85);
+        }
+        
+        /* --- PURE CSS LOGO STYLING --- */
+        .css-logo-container {
+            position: relative;
+            width: 140px;
+            height: 130px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            filter: drop-shadow(0 0 15px rgba(255, 242, 0, 0.3));
+        }
+
+        .splash-blob {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff200;
+            border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+            animation: blob-float 6s ease-in-out infinite;
+            z-index: 1;
+        }
+        
+        .splash-blob::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background-color: #fff200;
+            border-radius: 40% 60% 40% 60% / 40% 50% 60% 50%;
+            transform: rotate(45deg);
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        @keyframes blob-float {
+            0%, 100% { border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; transform: rotate(0deg); }
+            50% { border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%; transform: rotate(2deg); }
+        }
+
+        .logo-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .logo-text-oikos {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 2.8rem;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            letter-spacing: -1px;
+            position: relative;
+        }
+
+        .sun-ray-o {
+            position: absolute;
+            top: -8px;
+            left: 4px;
+            width: 2px;
+            height: 6px;
+            background: white;
+            border-radius: 2px;
+            transform-origin: 50% 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .ray-1 { transform: rotate(-45deg); }
+        .ray-2 { transform: rotate(0deg) translateY(-2px); }
+        .ray-3 { transform: rotate(45deg); }
+
+        .logo-line {
+            width: 100%;
+            height: 3px;
+            background: white;
+            border-radius: 4px;
+            margin: 2px 0 4px 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .logo-text-solar {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Snow Container -->
+    <div id="snow-container"></div>
+
+    <!-- Background Scenery -->
+    <div class="scenery-container">
+        <div class="sun-glow"></div>
+        <svg class="landscape" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="snowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#f1f5f9;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <path fill="#334155" fill-opacity="0.6" d="M0,192L60,180C120,168,240,145,360,150C480,155,600,190,720,200C840,210,960,195,1080,190C1200,185,1320,190,1380,192L1440,195L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+            <g opacity="0.5">
+                <rect x="50" y="160" width="30" height="60" fill="#1e293b"/>
+                <rect x="80" y="140" width="40" height="80" fill="#0f172a"/>
+                <rect x="120" y="170" width="25" height="50" fill="#1e293b"/>
+                <rect x="200" y="150" width="35" height="70" fill="#1e293b"/>
+                <rect x="1200" y="160" width="30" height="60" fill="#1e293b"/>
+                <rect x="1230" y="145" width="40" height="75" fill="#0f172a"/>
+                <rect x="1270" y="135" width="35" height="85" fill="#1e293b"/>
+            </g>
+            <g transform="translate(100, 120) scale(0.9)">
+                <rect x="10" y="80" width="100" height="80" fill="#1e293b" />
+                <rect x="5" y="30" width="30" height="130" fill="#0f172a" />
+                <path d="M5 30 L20 5 L35 30 Z" fill="#020617" /> 
+                <rect x="85" y="30" width="30" height="130" fill="#0f172a" />
+                <path d="M85 30 L100 5 L115 30 Z" fill="#020617" />
+                <path d="M35 80 L60 50 L85 80 Z" fill="#1e293b" />
+                <circle cx="20" cy="60" r="5" fill="#fbbf24" opacity="0.8"/>
+                <circle cx="100" cy="60" r="5" fill="#fbbf24" opacity="0.8"/>
+            </g>
+            <g transform="translate(320, 170)">
+                <rect x="0" y="20" width="40" height="60" fill="#475569" />
+                <path d="M0 20 L20 0 L40 20 Z" fill="#334155" />
+                <rect x="5" y="30" width="10" height="15" fill="#fbbf24" opacity="0.6"/>
+                <rect x="25" y="30" width="10" height="15" fill="#fbbf24" opacity="0.6"/>
+            </g>
+            <g transform="translate(1100, 140)">
+                 <path d="M-50 100 Q50 50 150 100" fill="#334155" />
+                 <rect x="0" y="40" width="100" height="60" fill="#1e293b" />
+                 <rect x="10" y="50" width="10" height="40" fill="#334155" />
+                 <rect x="30" y="50" width="10" height="40" fill="#334155" />
+                 <rect x="50" y="50" width="10" height="40" fill="#334155" />
+                 <rect x="70" y="50" width="10" height="40" fill="#334155" />
+                 <text x="50" y="30" font-family="Nunito" font-size="12" fill="#cbd5e1" text-anchor="middle">HSG</text>
+            </g>
+            <g transform="translate(950, 160)">
+                <rect x="0" y="0" width="30" height="90" fill="#334155" />
+                <rect x="5" y="10" width="20" height="4" fill="#fbbf24" opacity="0.5"/>
+                <rect x="5" y="25" width="20" height="4" fill="#fbbf24" opacity="0.5"/>
+                <rect x="5" y="40" width="20" height="4" fill="#fbbf24" opacity="0.5"/>
+                <rect x="30" y="50" width="40" height="40" fill="#475569" />
+                <path d="M30 50 L50 30 L70 50 Z" fill="#1e293b" />
+            </g>
+            <g transform="translate(450, 180)">
+                <rect x="0" y="40" width="60" height="40" fill="#475569" />
+                <path d="M-10 40 L30 10 L70 40 Z" fill="#1e293b" />
+                <rect x="10" y="20" width="20" height="15" transform="skewX(20)" fill="#2563eb" stroke="#60a5fa" stroke-width="1" opacity="0.8" />
+                <rect x="15" y="55" width="15" height="15" fill="#fbbf24" />
+                <rect x="80" y="30" width="50" height="50" fill="#475569" />
+                <path d="M70 30 L105 0 L140 30 Z" fill="#1e293b" />
+                <rect x="90" y="10" width="30" height="15" transform="skewX(-20)" fill="#2563eb" stroke="#60a5fa" stroke-width="1" opacity="0.8" />
+                 <rect x="95" y="50" width="20" height="20" fill="#fbbf24" />
+            </g>
+            <path fill="url(#snowGradient)" fill-opacity="1" d="M0,256L48,261.3C96,267,192,277,288,266.7C384,256,480,224,576,213.3C672,203,768,213,864,229.3C960,245,1056,267,1152,266.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <g transform="translate(650, 210)">
+                <path d="M10 40 L30 0 L50 40 Z" fill="#0f766e" />
+                <path d="M10 40 L30 10 L50 40 Z" transform="translate(0, -15) scale(0.9)" fill="#115e59" />
+            </g>
+            <g transform="translate(250, 220) scale(0.8)">
+                <path d="M10 40 L30 0 L50 40 Z" fill="#0f766e" />
+                <path d="M10 40 L30 10 L50 40 Z" transform="translate(0, -15) scale(0.9)" fill="#115e59" />
+            </g>
+            <g transform="translate(1300, 200) scale(0.9)">
+                <path d="M10 40 L30 0 L50 40 Z" fill="#0f766e" />
+                <path d="M10 40 L30 10 L50 40 Z" transform="translate(0, -15) scale(0.9)" fill="#115e59" />
+            </g>
+            <g transform="translate(850, 190) scale(0.7)">
+                <path d="M10 40 L30 0 L50 40 Z" fill="#0f766e" />
+                <path d="M10 40 L30 10 L50 40 Z" transform="translate(0, -15) scale(0.9)" fill="#115e59" />
+            </g>
+             <g transform="translate(50, 230) scale(0.6)">
+                <path d="M10 40 L30 0 L50 40 Z" fill="#0f766e" />
+                <path d="M10 40 L30 10 L50 40 Z" transform="translate(0, -15) scale(0.9)" fill="#115e59" />
+            </g>
+        </svg>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <header class="text-center mb-12">
+            
+            <!-- PURE CSS LOGO SECTION -->
+            <div class="mb-6 flex justify-center">
+                <div class="css-logo-container">
+                    <!-- Yellow watercolor blobs -->
+                    <div class="splash-blob"></div>
+                    
+                    <!-- Text content -->
+                    <div class="logo-content">
+                        <div class="logo-text-oikos">
+                            oikos
+                            <!-- Tiny sun rays on the first 'o' -->
+                            <div class="sun-ray-o ray-1" style="left: 6px; top: 8px;"></div>
+                            <div class="sun-ray-o ray-2" style="left: 21px; top: 3px;"></div>
+                            <div class="sun-ray-o ray-3" style="left: 36px; top: 8px;"></div>
+                        </div>
+                        <div class="logo-line"></div>
+                        <div class="logo-text-solar">Solar</div>
+                    </div>
+                </div>
+            </div>
+
+            <h1 class="text-5xl md:text-7xl text-yellow-300 drop-shadow-lg font-bold mb-2 tracking-wider">
+                Oikos Solar Project
+            </h1>
+            <p class="text-blue-100 text-xl md:text-2xl font-light mb-6">Community Advent Calendar 2025</p>
+            
+            <div class="bg-white/10 backdrop-blur-md inline-flex items-center gap-3 px-6 py-2 rounded-full text-white border border-white/20 shadow-lg">
+                <i class="fas fa-calendar-alt text-yellow-300"></i>
+                <span id="current-date-display">Loading date...</span>
+            </div>
+            
+            <!-- Admin Toggle -->
+            <div id="admin-panel" class="mt-4 hidden">
+                <label class="inline-flex items-center cursor-pointer group">
+                    <input type="checkbox" id="admin-toggle" class="sr-only peer">
+                    <div class="relative w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                    <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white">Unlock All (Admin Mode)</span>
+                </label>
+            </div>
+        </header>
+
+        <!-- Grid -->
+        <div id="calendar-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-6xl mx-auto pb-32">
+            <!-- Cards injected via JS -->
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="game-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0" onclick="closeModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-lg">
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden relative animation-bounce-in border-4 border-yellow-400">
+                
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-yellow-400 to-orange-400 p-4 flex justify-between items-center">
+                    <h3 id="modal-title" class="text-2xl text-white font-bold font-['Mountains_of_Christmas']">Day X</h3>
+                    <button onclick="closeModal()" class="text-white hover:text-red-100 transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Modal Content -->
+                <div class="p-6 text-center">
+                    <div id="modal-icon" class="text-5xl mb-4 text-yellow-500 drop-shadow-sm"></div>
+                    <h4 id="modal-game-type" class="text-lg font-bold text-gray-500 uppercase tracking-wide mb-2">Game Type</h4>
+                    <p id="modal-content" class="text-xl text-gray-800 font-medium mb-6 leading-relaxed">
+                        Loading content...
+                    </p>
+                    
+                    <!-- GUESSING INTEGRATION SECTION -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200 shadow-inner">
+                        <div class="flex flex-col gap-3 text-left">
+                            <div>
+                                <label for="name-input" class="block text-xs font-bold text-gray-500 uppercase mb-1">Your Name</label>
+                                <input type="text" id="name-input" class="w-full p-3 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" placeholder="e.g. Anna">
+                            </div>
+                            <div>
+                                <label for="guess-input" class="block text-xs font-bold text-gray-500 uppercase mb-1">Your Guess</label>
+                                <input type="text" id="guess-input" class="w-full p-3 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" placeholder="e.g. It's Marco!">
+                            </div>
+                            
+                            <button onclick="sendGuessToEmail()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-md mt-2">
+                                <i class="fas fa-paper-plane"></i> Send Private Guess
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Optional Image Container -->
+                    <div id="modal-image-container" class="hidden mb-4">
+                        <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden">
+                             <i class="fas fa-image text-4xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-gray-50 p-4 text-center">
+                    <button onclick="closeModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-8 rounded-full transition shadow-md transform hover:scale-105">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ADMIN CONFIGURATION ---
+        // Replace this with your actual email address!
+        const adminEmail = "your_email@example.com"; 
+
+        // --- CONFIGURATION: EDIT THIS DATA FOR YOUR TEAM ---
+        const calendarData = [
+            { day: 1, type: "Two Truths & A Lie", icon: "fa-mask", content: "1. I've met the Pope.\n2. I have a twin.\n3. I hate chocolate." },
+            { day: 2, type: "Guess Who?", icon: "fa-user-secret", content: "Fun Fact: I once accidentally joined a circus for a weekend." },
+            { day: 3, type: "Emoji Movie", icon: "fa-film", content: "Can you guess the holiday movie?\n🏠 😱 🎄 👮‍♂️" },
+            { day: 4, type: "Photo Challenge", icon: "fa-camera", content: "Whose workspace is this? (Check the photo!)", hasImage: true },
+            { day: 5, type: "Energy Song", icon: "fa-music", content: "Lyric: 'Just a small town girl, living in a lonely world...'" },
+            { day: 6, type: "Holiday Treat", icon: "fa-cookie-bite", content: "My favorite treat is: Glühwein and specifically burnt almonds." },
+            { day: 7, type: "Two Truths & A Lie", icon: "fa-mask", content: "1. I speak 5 languages.\n2. I can fly a plane.\n3. I've never seen Star Wars." },
+            { day: 8, type: "Guess Who?", icon: "fa-user-secret", content: "Fun Fact: I collect vintage solar calculators." },
+            { day: 9, type: "Emoji Movie", icon: "fa-film", content: "Guess the movie:\n🚆 ❄️ 🎅 🔔" },
+            { day: 10, type: "Photo Challenge", icon: "fa-dog", content: "Who does this adorable dog belong to?", hasImage: true },
+            { day: 11, type: "Energy Song", icon: "fa-bolt", content: "Song: 'Eye of the Tiger' - it gets me through every exam." },
+            { day: 12, type: "Trivia", icon: "fa-question", content: "Which Oikos member has been to 30 countries?" },
+            { day: 13, type: "Two Truths & A Lie", icon: "fa-mask", content: "1. I was born on a leap day.\n2. I have 10 siblings.\n3. I can juggle fire." },
+            { day: 14, type: "Recipe", icon: "fa-utensils", content: "My grandma's secret gingerbread recipe involves black pepper!" },
+            { day: 15, type: "Guess Who?", icon: "fa-user-secret", content: "Fun Fact: I was a child model for a knitting magazine." },
+            { day: 16, type: "Emoji Movie", icon: "fa-film", content: "Guess the movie:\n👹 🟢 🎁 💔" },
+            { day: 17, type: "Photo Challenge", icon: "fa-mug-hot", content: "Whose favorite mug is this (the one with the physics joke)?", hasImage: true },
+            { day: 18, type: "Energy Song", icon: "fa-music", content: "Song: 'Happy' by Pharrell Williams." },
+            { day: 19, type: "Wish List", icon: "fa-gift", content: "All I want for Christmas is... more efficient PV cells." },
+            { day: 20, type: "Two Truths & A Lie", icon: "fa-mask", content: "1. I've run a marathon.\n2. I don't drink coffee.\n3. I'm afraid of butterflies." },
+            { day: 21, type: "Guess Who?", icon: "fa-user-secret", content: "Fun Fact: I play the bagpipes." },
+            { day: 22, type: "Emoji Movie", icon: "fa-film", content: "Guess the movie:\n👦 🍫 🎫 🏭" },
+            { day: 23, type: "Photo Challenge", icon: "fa-tree", content: "Whose Christmas tree decoration is this?", hasImage: true },
+            { day: 24, type: "The Grand Finale", icon: "fa-star", content: "Merry Christmas Oikos Team! Check the group chat for a special video message!", special: true }
+        ];
+
+        // --- LOGIC ---
+        const grid = document.getElementById('calendar-grid');
+        const dateDisplay = document.getElementById('current-date-display');
+        const adminToggle = document.getElementById('admin-toggle');
+        
+        let currentDate = new Date();
+        // currentDate = new Date(2025, 11, 5); // UNCOMMENT TO TEST
+        
+        const currentMonth = currentDate.getMonth(); 
+        const currentDay = currentDate.getDate();
+
+        // Track the current day being viewed
+        let currentActiveDay = 1;
+
+        dateDisplay.textContent = currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        function isDoorOpenable(day) {
+            if (adminToggle.checked) return true;
+            // Note: getMonth() is 0-indexed, so 11 = December
+            if (currentMonth !== 11) return false; 
+            return day <= currentDay;
+        }
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            calendarData.forEach(data => {
+                const card = document.createElement('div');
+                const isOpenable = isDoorOpenable(data.day);
+                const isOpened = localStorage.getItem(`oikos_door_${data.day}`) === 'true';
+
+                card.className = `door-card h-48 w-full ${isOpened ? 'opened' : ''}`;
+                card.innerHTML = `
+                    <div class="door-inner">
+                        <div class="door-front ${!isOpenable ? 'locked' : ''} flex flex-col items-center justify-center shadow-md" onclick="handleDoorClick(${data.day}, ${isOpenable})">
+                            <span class="door-number text-4xl md:text-6xl font-bold drop-shadow-md">${data.day}</span>
+                            ${!isOpenable ? '<i class="fas fa-lock mt-2 text-gray-400"></i>' : '<span class="mt-2 text-xs uppercase font-bold tracking-wider text-red-100">Open Me</span>'}
+                        </div>
+                        <div class="door-back flex flex-col items-center justify-center cursor-pointer" onclick="openModal(${data.day})">
+                            <i class="fas ${data.icon} text-3xl mb-2 text-red-600"></i>
+                            <span class="font-bold text-sm uppercase tracking-wide text-orange-800">Revealed!</span>
+                            <button class="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition">View</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleDoorClick(day, isOpenable) {
+            if (!isOpenable) {
+                const card = document.querySelectorAll('.door-card')[day - 1];
+                card.classList.add('animate-pulse');
+                setTimeout(() => card.classList.remove('animate-pulse'), 500);
+                return;
+            }
+            localStorage.setItem(`oikos_door_${day}`, 'true');
+            const card = document.querySelectorAll('.door-card')[day - 1];
+            card.classList.add('opened');
+            setTimeout(() => { openModal(day); }, 600);
+        }
+
+        function openModal(day) {
+            currentActiveDay = day; // Store which day we are looking at
+            const data = calendarData.find(d => d.day === day);
+            const modal = document.getElementById('game-modal');
+            
+            document.getElementById('modal-title').innerText = `December ${day}`;
+            document.getElementById('modal-game-type').innerText = data.type;
+            document.getElementById('modal-content').innerText = data.content;
+            document.getElementById('modal-icon').innerHTML = `<i class="fas ${data.icon}"></i>`;
+            
+            // Clear the input fields from previous uses
+            document.getElementById('guess-input').value = '';
+            document.getElementById('name-input').value = '';
+
+            const imgContainer = document.getElementById('modal-image-container');
+            if (data.hasImage) {
+                imgContainer.classList.remove('hidden');
+            } else {
+                imgContainer.classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('game-modal').classList.add('hidden');
+        }
+
+        function sendGuessToEmail() {
+            const name = document.getElementById('name-input').value;
+            const guess = document.getElementById('guess-input').value;
+            
+            if (!name || !guess) {
+                alert("Please enter both your name and your guess!");
+                return;
+            }
+            
+            const subject = `Day ${currentActiveDay} Guess from ${name}`;
+            const body = `Name: ${name}\nDay: ${currentActiveDay}\nMy Guess: ${guess}`;
+            
+            // Opens default mail client
+            window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
+
+        function createSnowflakes() {
+            const container = document.getElementById('snow-container');
+            const snowflakesCount = 30;
+            for (let i = 0; i < snowflakesCount; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.innerText = '❅';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.animationDuration = (Math.random() * 5 + 5) + 's, ' + (Math.random() * 2 + 1) + 's';
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                container.appendChild(flake);
+            }
+        }
+
+        // Check for secret admin parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('admin')) {
+            document.getElementById('admin-panel').classList.remove('hidden');
+        }
+
+        adminToggle.addEventListener('change', renderGrid);
+        createSnowflakes();
+        renderGrid();
+    </script>
+</body>
+</html>
