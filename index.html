@@ -552,37 +552,39 @@
                 day: 1, 
                 type: "Two Truths & A Lie", 
                 icon: "fa-mask", 
-                cardImage: "images/day1_person.jpg", // ADD YOUR IMAGE PATH HERE
+                // CHANGE THIS PATH to match your uploaded file name
+                cardImage: "1.jpg", 
                 content: "1. I've met the Pope.\n2. I have a twin.\n3. I hate chocolate.",
-                answerName: "Aloys",     // UPDATE THIS (e.g., "Marco")
-                answerImage: "1.jpg"     // UPDATE THIS (e.g., "marco.jpg")
+                answerName: "Marco",     
+                answerImage: "1.jpg" 
             },
             { 
                 day: 2, 
                 type: "Guess Who?", 
                 icon: "fa-user-secret", 
-                cardImage: "images/day2_person.jpg", 
+                // If you uploaded 'sara.png' to the same folder as the html file:
+                cardImage: "2.png", 
                 content: "Fun Fact: I once accidentally joined a circus for a weekend.",
-                answerName: "Aloys bis",
+                answerName: "Alyos",
                 answerImage: "2.jpg" 
             },
             { 
                 day: 3, 
                 type: "Emoji Movie", 
                 icon: "fa-film", 
-                cardImage: "images/day3_person.jpg",
+                cardImage: "3.jpg",
                 content: "Can you guess the holiday movie?\n🏠 😱 🎄 👮‍♂️",
-                answerName: "aloys",
+                answerName: "him",
                 answerImage: "3.jpg" 
             },
             { 
                 day: 4, 
                 type: "Photo Challenge", 
                 icon: "fa-camera", 
-                cardImage: "", // PASTE IMAGE PATH HERE
+                cardImage: "4.jpg", // PASTE IMAGE PATH HERE
                 content: "Whose workspace is this? (Check the photo!)", 
                 hasImage: true, 
-                answerName: "A", 
+                answerName: "test", 
                 answerImage: "4.jpg" 
             },
             { 
@@ -591,8 +593,8 @@
                 icon: "fa-music", 
                 cardImage: "", // PASTE IMAGE PATH HERE
                 content: "Lyric: 'Just a small town girl, living in a lonely world...'", 
-                answerName: "AA", 
-                answerImage: "5.jpeg" 
+                answerName: "", 
+                answerImage: "" 
             },
             { 
                 day: 6, 
@@ -600,8 +602,8 @@
                 icon: "fa-cookie-bite", 
                 cardImage: "", // PASTE IMAGE PATH HERE
                 content: "My favorite treat is: Glühwein and specifically burnt almonds.", 
-                answerName: "Alolo", 
-                answerImage: "6.jpeg" 
+                answerName: "", 
+                answerImage: "" 
             },
             { 
                 day: 7, 
@@ -609,8 +611,8 @@
                 icon: "fa-mask", 
                 cardImage: "", // PASTE IMAGE PATH HERE
                 content: "1. I speak 5 languages.\n2. I can fly a plane.\n3. I've never seen Star Wars.", 
-                answerName: "Mr A", 
-                answerImage: "7.jpeg" 
+                answerName: "", 
+                answerImage: "" 
             },
             { 
                 day: 8, 
@@ -618,8 +620,8 @@
                 icon: "fa-user-secret", 
                 cardImage: "", // PASTE IMAGE PATH HERE
                 content: "Fun Fact: I collect vintage solar calculators.", 
-                answerName: "Le A", 
-                answerImage: "8.jpeg" 
+                answerName: "", 
+                answerImage: "" 
             },
             { 
                 day: 9, 
@@ -627,8 +629,8 @@
                 icon: "fa-film", 
                 cardImage: "", // PASTE IMAGE PATH HERE
                 content: "Guess the movie:\n🚆 ❄️ 🎅 🔔", 
-                answerName: "him", 
-                answerImage: "9.jpeg" 
+                answerName: "", 
+                answerImage: "" 
             },
             { 
                 day: 10, 
@@ -808,6 +810,36 @@
             return false;
         }
 
+        function handleImageError(img) {
+            // Check if admin mode is active
+            if (document.getElementById('admin-toggle').checked) {
+                // In admin mode, SHOW that the image is broken instead of hiding it
+                img.src = "https://placehold.co/300x200/ff0000/ffffff?text=Image+Not+Found";
+                img.style.objectFit = "contain";
+                img.title = "Could not find image file. Check path in code.";
+                
+                // Keep parent visible so admin sees the error
+                img.parentElement.classList.add('has-image'); 
+                
+            } else {
+                // In normal mode, fallback to text/icon view silently
+                img.style.display='none'; 
+                
+                // Hide overlay
+                if(img.nextElementSibling) img.nextElementSibling.style.display='none';
+                
+                // Remove class that removes padding
+                img.parentElement.classList.remove('has-image');
+                
+                // Restore border
+                img.parentElement.style.border='4px solid #fcd34d';
+                
+                // Show text content
+                const content = img.parentElement.querySelector('.default-content');
+                if(content) content.style.display='flex';
+            }
+        }
+
         function renderGrid() {
             grid.innerHTML = '';
             calendarData.forEach(data => {
@@ -832,7 +864,7 @@
                         <div class="${backClass}" onclick="openModal(${data.day})">
                             
                             ${hasCardImage ? `
-                                <img src="${data.cardImage}" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.style.border='4px solid #fcd34d'; this.parentElement.querySelector('.default-content').style.display='flex';" />
+                                <img src="${data.cardImage}" class="absolute inset-0 w-full h-full object-cover" onerror="handleImageError(this)" />
                                 <div class="absolute inset-0 bg-black/40"></div>
                             ` : ''}
 
