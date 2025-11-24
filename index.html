@@ -544,7 +544,7 @@
 
     <script>
         // --- ADMIN CONFIGURATION ---
-        const adminEmail = "your_email@example.com"; 
+        const adminEmail = "aloyspaulcamille.bouvierdyvoire@student.unisg.ch"; 
 
         // --- CONFIGURATION: UPDATE THIS DAILY ON GITHUB ---
         const calendarData = [
@@ -563,9 +563,9 @@
                 type: "Guess Who?", 
                 icon: "fa-user-secret", 
                 // If you uploaded 'sara.png' to the same folder as the html file:
-                cardImage: "2.png", 
+                cardImage: "2.jpg", 
                 content: "Fun Fact: I once accidentally joined a circus for a weekend.",
-                answerName: "Alyos",
+                answerName: "aloys",
                 answerImage: "2.jpg" 
             },
             { 
@@ -584,7 +584,7 @@
                 cardImage: "4.jpg", // PASTE IMAGE PATH HERE
                 content: "Whose workspace is this? (Check the photo!)", 
                 hasImage: true, 
-                answerName: "test", 
+                answerName: "le A", 
                 answerImage: "4.jpg" 
             },
             { 
@@ -915,12 +915,14 @@
             
             if (data.hasImage) {
                 imgContainer.classList.remove('hidden');
+                // FORCE RESET DISPLAY to fix "stuck hidden" issue
+                puzzleImg.style.display = ''; 
                 // Assuming you have images named day1.jpg, day2.jpg etc. 
                 // Or you can add a field to your data object. 
                 // Currently set to a placeholder path if not specified
                 puzzleImg.src = data.puzzleImage || `images/day${day}_puzzle.jpg`; 
                 puzzleImg.classList.remove('hidden');
-                puzzleImg.nextElementSibling.classList.add('hidden'); // hide icon if image loads
+                if(puzzleImg.nextElementSibling) puzzleImg.nextElementSibling.classList.add('hidden'); // hide icon if image loads
             } else {
                 imgContainer.classList.add('hidden');
             }
@@ -942,6 +944,8 @@
                 const ansIcon = document.getElementById('answer-icon');
                 
                 if (data.answerImage) {
+                    // FORCE RESET DISPLAY to fix "stuck hidden" issue
+                    ansImg.style.display = ''; 
                     ansImg.src = data.answerImage;
                     ansImg.classList.remove('hidden');
                     ansIcon.classList.add('hidden');
