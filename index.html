@@ -181,6 +181,20 @@
             border: 4px solid #fcd34d; 
         }
 
+        /* Festive Wait State (Green Stripes) */
+        .door-back.festive-wait {
+            background-color: #166534;
+            background-image: repeating-linear-gradient(
+                45deg,
+                #166534,
+                #166534 10px,
+                #14532d 10px,
+                #14532d 20px
+            );
+            color: #fef3c7;
+            border: 4px solid #fcd34d;
+        }
+
         /* Remove border when image is present for clean look */
         .door-back.has-image {
             border: none;
@@ -544,7 +558,7 @@
 
     <script>
         // --- ADMIN CONFIGURATION ---
-        const adminEmail = "aloyspaulcamille.bouvierdyvoire@student.unisg.ch"; 
+        const adminEmail = "your_email@example.com"; 
 
         // --- CONFIGURATION: UPDATE THIS DAILY ON GITHUB ---
         const calendarData = [
@@ -553,39 +567,39 @@
                 type: "Two Truths & A Lie", 
                 icon: "fa-mask", 
                 // CHANGE THIS PATH to match your uploaded file name
-                cardImage: "1.jpg", 
+                cardImage: "images/marco_day1.jpg", 
                 content: "1. I've met the Pope.\n2. I have a twin.\n3. I hate chocolate.",
                 answerName: "Marco",     
-                answerImage: "1.jpg" 
+                answerImage: "images/marco_reveal.jpg" 
             },
             { 
                 day: 2, 
                 type: "Guess Who?", 
                 icon: "fa-user-secret", 
                 // If you uploaded 'sara.png' to the same folder as the html file:
-                cardImage: "2.jpg", 
+                cardImage: "sara.png", 
                 content: "Fun Fact: I once accidentally joined a circus for a weekend.",
                 answerName: "",
-                answerImage: "2.jpg" 
+                answerImage: "" 
             },
             { 
                 day: 3, 
                 type: "Emoji Movie", 
                 icon: "fa-film", 
-                cardImage: "3.jpg",
+                cardImage: "images/day3_person.jpg",
                 content: "Can you guess the holiday movie?\n🏠 😱 🎄 👮‍♂️",
                 answerName: "",
-                answerImage: "3.jpg" 
+                answerImage: "" 
             },
             { 
                 day: 4, 
                 type: "Photo Challenge", 
                 icon: "fa-camera", 
-                cardImage: "4.jpg", // PASTE IMAGE PATH HERE
+                cardImage: "", // PASTE IMAGE PATH HERE
                 content: "Whose workspace is this? (Check the photo!)", 
                 hasImage: true, 
                 answerName: "", 
-                answerImage: "4.jpg" 
+                answerImage: "" 
             },
             { 
                 day: 5, 
@@ -857,10 +871,21 @@
                 // Check for image logic
                 const hasCardImage = data.cardImage && data.cardImage.trim() !== "";
                 
+                // Logic: Only show the FULL photo if it is the NEXT day (future) or Admin mode is on
+                // If it is the SAME day, we hide the photo and show the "Festive Wait" state
+                const isFutureDate = (currentMonth === 11 && currentDay > data.day) || currentMonth > 11;
+                const shouldShowImage = hasCardImage && (isFutureDate || adminToggle.checked);
+                const showFestiveWait = hasCardImage && !shouldShowImage;
+
                 // Add 'group' class for hover effects
-                const backClass = hasCardImage 
-                    ? 'door-back has-image flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group' 
-                    : 'door-back flex flex-col items-center justify-center cursor-pointer';
+                // If it's a festive wait, we use the festive class instead of 'has-image'
+                let backClass = 'door-back flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group';
+                
+                if (shouldShowImage) {
+                    backClass += ' has-image';
+                } else if (showFestiveWait) {
+                    backClass += ' festive-wait';
+                }
 
                 card.className = `door-card h-48 w-full ${isOpened ? 'opened' : ''}`;
                 card.innerHTML = `
@@ -871,22 +896,24 @@
                         </div>
                         <div class="${backClass}" onclick="openModal(${data.day})">
                             
-                            ${hasCardImage ? `
+                            ${shouldShowImage ? `
                                 <img src="${data.cardImage}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="handleImageError(this)" />
                                 <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             ` : ''}
 
-                            <div class="relative z-10 flex flex-col items-center w-full p-2 default-content ${hasCardImage ? 'opacity-0 group-hover:opacity-100 transition-opacity duration-300' : ''}" style="${hasCardImage ? '' : 'display:flex'}">
+                            <div class="relative z-10 flex flex-col items-center w-full p-2 default-content ${shouldShowImage ? 'opacity-0 group-hover:opacity-100 transition-opacity duration-300' : ''}" style="${shouldShowImage ? '' : 'display:flex'}">
                                 
                                 <!-- NEW: Day Number on Hover (Image cards only) -->
-                                ${hasCardImage ? `<span class="image-hover-number text-5xl text-white font-['Mountains_of_Christmas'] font-bold drop-shadow-lg mb-2">${data.day}</span>` : ''}
+                                ${shouldShowImage ? `<span class="image-hover-number text-5xl text-white font-['Mountains_of_Christmas'] font-bold drop-shadow-lg mb-2">${data.day}</span>` : ''}
 
-                                <!-- ICON (Only visible if no image or image failed) -->
-                                <i class="fas ${data.icon} text-3xl mb-2 text-red-600 ${hasCardImage ? 'hidden' : ''}"></i>
+                                <!-- ICON (Visible if NO image, or if in Festive Wait State) -->
+                                <i class="fas ${data.icon} text-3xl mb-2 ${showFestiveWait ? 'text-yellow-200' : 'text-red-600'} ${shouldShowImage ? 'hidden' : ''}"></i>
 
-                                <span class="font-bold text-lg uppercase tracking-wide ${hasCardImage ? 'text-white drop-shadow-lg text-lg mb-2' : 'text-orange-800'}">Revealed!</span>
+                                <span class="font-bold text-lg uppercase tracking-wide ${shouldShowImage ? 'text-white drop-shadow-lg text-lg mb-2' : (showFestiveWait ? 'text-yellow-100' : 'text-orange-800')}">
+                                    ${showFestiveWait ? 'Guess Who?' : 'Revealed!'}
+                                </span>
                                 
-                                <button class="mt-1 px-4 py-1 ${hasCardImage ? 'bg-red-600 hover:bg-red-700 shadow-lg text-white font-bold' : 'bg-red-500 text-white hover:bg-red-600'} text-xs rounded-full transition">View</button>
+                                <button class="mt-1 px-4 py-1 ${shouldShowImage ? 'bg-red-600 hover:bg-red-700 shadow-lg text-white font-bold' : (showFestiveWait ? 'bg-yellow-500 text-green-900 hover:bg-yellow-400 font-bold' : 'bg-red-500 text-white hover:bg-red-600')} text-xs rounded-full transition">View</button>
                             </div>
                         </div>
                     </div>
